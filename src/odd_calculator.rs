@@ -11,11 +11,11 @@ const MAX_DEFENDER_DIE: i32 = 2;
 const D6: i32 = 6;
 const D20: i32 = 20;
 
-pub fn calculate_odds(attackers: i32, defenders: i32, defense: bool, arc: bool) -> f64 {
+pub fn calculate_odds(attackers: i32, defenders: i32, defense: bool, ark: bool) -> f64 {
     rand::random::<i32>();
     let c = Calculator {
         fort: defense,
-        arc,
+        ark,
         log: Vec::new().into(),
     };
     let iter = 100_000;
@@ -78,7 +78,7 @@ impl Calculator {
             defense_damage: 0,
         };
 
-        if self.fort && self.arc {
+        if self.fort && self.ark {
             attacker_die[0] += 1;
         } else if self.fort {
             defender_die[0] += 1;
@@ -122,7 +122,7 @@ impl Calculator {
 #[derive(Debug)]
 pub struct Calculator {
     fort: bool,
-    arc: bool,
+    ark: bool,
     log: Mutex<Vec<SubterfugeLog>>,
 }
 
