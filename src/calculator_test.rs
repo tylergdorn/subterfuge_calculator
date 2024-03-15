@@ -4,7 +4,7 @@ use crate::odd_calculator::*;
 fn test_test() {
     let c = Calculator {
         fort: false,
-        arc: false,
+        ark: false,
         log: Vec::new().into(),
     };
     // let mut rng = rand::thread_rng();
@@ -19,7 +19,7 @@ fn test_test() {
 fn test_hero_combat_invalid() {
     let c = Calculator {
         fort: false,
-        arc: false,
+        ark: false,
         log: Vec::new().into(),
     };
     c.do_hero_combat(HeroCombatant::Units(0), HeroCombatant::Units(0));
