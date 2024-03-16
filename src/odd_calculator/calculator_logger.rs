@@ -1,7 +1,10 @@
 use std::{fmt::Display, sync::Mutex};
 
+use crate::odd_calculator::calculator::Combatant;
+
 #[derive(Debug, Clone)]
 pub enum SubterfugeLog {
+    CombatStart(CombatStart),
     AttackerRoll(Vec<i32>),
     DefenderRoll(Vec<i32>),
     Damage(Damage),
@@ -43,9 +46,32 @@ pub struct Damage {
     pub defense_damage: i32,
 }
 
+#[derive(Debug, Clone)]
+pub struct CombatStart {
+    pub attacker: Combatant,
+    pub defender: Combatant,
+}
+
+impl Display for Combatant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Combatant::Units(units) => write!(f, "{} units", units),
+            Combatant::Hero(hero) => write!(
+                f,
+                "hero with {} attack and {} defense",
+                hero.attack, hero.health
+            ),
+        }
+    }
+}
+
 impl Display for SubterfugeLog {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = match self {
+            SubterfugeLog::CombatStart(combatants) => format!(
+                "attacker: {}, Defender: {}",
+                combatants.attacker, combatants.defender
+            ),
             SubterfugeLog::AttackerRoll(die) => format!("attacker rolled: {:#?}", die),
             SubterfugeLog::DefenderRoll(die) => format!("defender rolled: {:#?}", die),
             SubterfugeLog::Damage(damage) => format!(
