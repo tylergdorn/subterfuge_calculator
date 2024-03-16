@@ -1,7 +1,5 @@
 use clap::Parser;
-use odd_calculator::{
-    calculator::Calculator, calculator::Combatant, calculator::Hero, CombatSimulator,
-};
+use odd_calculator::{calculator::Calculator, calculator::Combatant, CombatSimulator};
 
 mod odd_calculator;
 fn main() {
@@ -18,9 +16,9 @@ fn main() {
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[arg(long, default_value_t = false)]
+    #[arg(short, long, default_value_t = false)]
     fort: bool,
-    #[arg(long, default_value_t = false)]
+    #[arg(short, long, default_value_t = false)]
     ark: bool,
     #[arg(short, long, default_value_t = 100_000)]
     simulations: i32,
