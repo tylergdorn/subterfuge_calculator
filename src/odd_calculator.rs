@@ -1,6 +1,11 @@
-use std::{cmp::min, sync::Mutex};
+use std::{cmp::min, fmt::format, sync::Mutex};
 
+use calculator_logger::{Damage, SubterfugeLog};
 use rand::{seq::SliceRandom, Rng};
+
+use self::calculator_logger::SubterfugeLogger;
+
+mod calculator_logger;
 
 #[cfg(test)]
 #[path = "./calculator_test.rs"]
@@ -13,23 +18,40 @@ const D20: i32 = 20;
 
 pub fn calculate_odds(attackers: i32, defenders: i32, defense: bool, ark: bool) -> f64 {
     rand::random::<i32>();
-    let c = Calculator {
-        fort: defense,
-        ark,
-        log: Vec::new().into(),
-    };
-    let iter = 100_000;
-    let x = (0..iter)
-        .map(|_| c.do_unit_combat(attackers, defenders))
-        .fold(0, |acc, item| if item { acc + 1 } else { acc });
-    let final_percent = (x as f32 / iter as f32) * 100.0;
-    println!("{}%", final_percent);
+    let c = Calculator::new(defense, ark, true);
+    // let iter = 100_000;
+    // let x = (0..iter)
+    //     .map(|_| c.do_unit_combat(attackers, defenders))
+    //     .fold(0, |acc, item| if item { acc + 1 } else { acc });
+    // let final_percent = (x as f32 / iter as f32) * 100.0;
+    // println!("{}%", final_percent);
+
+    let res = c.simulate_combat_n_times(1, || {
+        c.do_hero_combat(
+            HeroCombatant::Hero(Hero {
+                attack: 5,
+                health: 5,
+            }),
+            HeroCombatant::Units(5),
+        )
+    });
+    println!("hero: {}%", res.to_percent());
     // println!("{:#?}", c.do_unit_combat(attackers, defenders);
-    // println!("{:#?}", c.log.lock().unwrap());
+    println!("{}", c.log.unwrap());
     return 0.0;
 }
 
 impl Calculator {
+    pub fn new(fort: bool, ark: bool, log: bool) -> Self {
+        Calculator {
+            fort,
+            ark,
+            log: match log {
+                true => Some(SubterfugeLogger::new()),
+                false => None,
+            },
+        }
+    }
     fn get_dice(&self, dice_count: i32, dice_sides: i32) -> Vec<i32> {
         let mut rng = rand::thread_rng();
         let mut res: Vec<i32> = (0..dice_count)
@@ -40,20 +62,24 @@ impl Calculator {
         res.reverse();
         return res;
     }
+    fn simulate_combat_n_times<F>(&self, n: i32, f: F) -> SimulationResults
+    where
+        F: Fn() -> bool,
+    {
+        let attacker_wins = (0..n)
+            .map(|_| f())
+            .fold(0, |acc, item| if item { acc + 1 } else { acc });
+        SimulationResults {
+            attacker_wins,
+            total_iterations: n,
+        }
+    }
 
     // returns true if attackers win
     fn do_unit_combat(&self, attackers: i32, defenders: i32) -> bool {
         let mut atk = attackers;
         let mut def = defenders;
         while atk > 0 && def > 0 {
-            // println!(
-            //     "atk {} def {} atk > 0 {} def > 0 {} atk > 0 && def > 0 {}",
-            //     atk,
-            //     def,
-            //     atk > 0,
-            //     def > 0,
-            //     atk > 0 && def > 0
-            // );
             let dmg = self.get_unit_combat_damage(atk, def);
             atk -= dmg.attack_damage;
             def -= dmg.defense_damage;
@@ -99,22 +125,45 @@ impl Calculator {
     }
 
     fn add_log(&self, log: SubterfugeLog) {
-        self.log.lock().unwrap().push(log)
+        if let Some(logger) = &self.log {
+            logger.add_log(log)
+        }
     }
 
-    fn do_hero_combat(&self, mut attacker: HeroCombatant, mut defender: HeroCombatant) -> Damage {
+    fn do_hero_combat(&self, mut attacker: HeroCombatant, mut defender: HeroCombatant) -> bool {
         if matches!(attacker, HeroCombatant::Units(_))
             && matches!(defender, HeroCombatant::Units(_))
         {
             panic!("units cannot fight units in hero combat")
         }
 
-        let attacker_die = self.get_dice(D20, 1)[0];
-        let defender_die = self.get_dice(D20, 1)[0];
-
-        Damage {
-            attack_damage: attacker_die,
-            defense_damage: defender_die,
+        while attacker.get_health() > 0 && defender.get_health() > 0 {
+            let attacker_die = self.get_dice(1, D20)[0] + attacker.get_attack();
+            let defender_die = self.get_dice(1, D20)[0]
+                + defender.get_attack()
+                + if self.fort == true { 1 } else { 0 };
+            self.add_log(SubterfugeLog::AttackerRoll(vec![attacker_die]));
+            self.add_log(SubterfugeLog::DefenderRoll(vec![defender_die]));
+            if defender_die >= attacker_die {
+                attacker = attacker.do_damage();
+                self.add_log(SubterfugeLog::Damage(Damage {
+                    attack_damage: 1,
+                    defense_damage: 0,
+                }));
+            } else {
+                defender = defender.do_damage();
+                self.add_log(SubterfugeLog::Damage(Damage {
+                    attack_damage: 0,
+                    defense_damage: 1,
+                }));
+            }
+        }
+        if attacker.get_health() == 0 {
+            self.add_log(SubterfugeLog::AttackerVictory(false));
+            return false;
+        } else {
+            self.add_log(SubterfugeLog::AttackerVictory(true));
+            return true;
         }
     }
 }
@@ -123,21 +172,7 @@ impl Calculator {
 pub struct Calculator {
     fort: bool,
     ark: bool,
-    log: Mutex<Vec<SubterfugeLog>>,
-}
-
-#[derive(Debug, Clone)]
-struct Damage {
-    attack_damage: i32,
-    defense_damage: i32,
-}
-
-#[derive(Debug)]
-enum SubterfugeLog {
-    AttackerRoll(Vec<i32>),
-    DefenderRoll(Vec<i32>),
-    Damage(Damage),
-    AttackerVictory(bool),
+    log: Option<SubterfugeLogger>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -176,4 +211,19 @@ impl HeroCombatant {
 struct Hero {
     attack: i32,
     health: i32,
+}
+
+#[derive(Debug, PartialEq)]
+struct SimulationResults {
+    attacker_wins: i32,
+    total_iterations: i32,
+}
+
+impl SimulationResults {
+    fn to_percent(self) -> String {
+        format!(
+            "{}",
+            (self.attacker_wins as f32 / self.total_iterations as f32) * 100.0
+        )
+    }
 }
