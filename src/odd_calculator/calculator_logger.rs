@@ -69,13 +69,13 @@ impl Display for SubterfugeLog {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = match self {
             SubterfugeLog::CombatStart(combatants) => format!(
-                "attacker: {}, Defender: {}",
+                "Attacker: {}, Defender: {}",
                 combatants.attacker, combatants.defender
             ),
-            SubterfugeLog::AttackerRoll(die) => format!("attacker rolled: {:#?}", die),
-            SubterfugeLog::DefenderRoll(die) => format!("defender rolled: {:#?}", die),
+            SubterfugeLog::AttackerRoll(die) => format!("Attacker rolled: {:#?}", die),
+            SubterfugeLog::DefenderRoll(die) => format!("Defender rolled: {:#?}", die),
             SubterfugeLog::Damage(damage) => format!(
-                "attacker dealt: {} damage, defender dealt: {} damage",
+                "Attacker dealt: {} damage, Defender dealt: {} damage",
                 damage.attack_damage, damage.defense_damage
             ),
             SubterfugeLog::AttackerVictory(win) => match win {
