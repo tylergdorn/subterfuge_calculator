@@ -108,7 +108,7 @@ impl Calculator {
         }
         self.add_log(SubterfugeLog::CombatStart(CombatStart {
             attacker: attacker.clone(),
-            defender: attacker.clone(),
+            defender: defender.clone(),
         }));
 
         while attacker.get_health() > 0 && defender.get_health() > 0 {
