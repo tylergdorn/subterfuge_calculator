@@ -6,8 +6,10 @@ fn main() {
     let args = Args::parse();
     let cs = CombatSimulator::new(args.simulations);
     let calculator = Calculator::new(args.fort, args.ark, args.log);
-    let res = cs.simulate_combat(&calculator, args.attacker, args.defender);
-    // println!("{:#?}{:#?}", args.attacker, args.defender);
+    let res = match args.multi {
+        true => cs.simulate_combat_multi(&calculator, args.attacker, args.defender),
+        false => cs.simulate_combat(&calculator, args.attacker, args.defender),
+    };
     println!("attacker has {}% chance of winning", res.to_percent());
     if args.log {
         println!("{}", calculator.get_log().unwrap())
@@ -34,4 +36,6 @@ struct Args {
         help = "`attack,health` for hero, or just a number for units"
     )]
     defender: Combatant,
+    #[arg(short, long, default_value_t = false)]
+    multi: bool,
 }

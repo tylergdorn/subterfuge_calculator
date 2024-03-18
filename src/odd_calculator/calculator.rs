@@ -3,7 +3,7 @@ use regex::Regex;
 use std::{cmp::min, str::FromStr};
 
 use super::calculator_logger::{CombatStart, Damage, SubterfugeLog, SubterfugeLogger};
-use rand::Rng;
+use rand::{thread_rng, Rng};
 
 const MAX_ATTACKER_DIE: i32 = 3;
 const MAX_DEFENDER_DIE: i32 = 2;
@@ -37,7 +37,7 @@ impl Calculator {
     }
 
     fn get_dice(&self, dice_count: i32, dice_sides: i32) -> Vec<i32> {
-        let mut rng = rand::thread_rng();
+        let mut rng = thread_rng();
         let mut res: Vec<i32> = (0..dice_count)
             .map(|_| rng.gen_range(0..dice_sides))
             .collect();
@@ -149,11 +149,17 @@ impl Calculator {
     }
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct Calculator {
+    // rng: Box<RefCell<dyn RngCore>>,
     fort: bool,
     ark: bool,
     log: Option<SubterfugeLogger>,
+}
+
+pub struct CombatResults {
+    attacker_victory: bool,
+    dice_rolls: i32,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -161,25 +167,6 @@ pub enum Combatant {
     Units(i32),
     Hero(Hero),
 }
-
-// impl clap::ValueEnum for Combatant {
-//     fn value_variants<'a>() -> &'a [Self] {
-//         &[
-//             Combatant::Units(0),
-//             Combatant::Hero(Hero {
-//                 attack: 0,
-//                 health: 0,
-//             }),
-//         ]
-//     }
-
-//     fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
-//         match self {
-//             Self::Units(_) => Some(clap::builder::PossibleValue::new("units")),
-//             Self::Hero(_) => Some(clap::builder::PossibleValue::new("hero")),
-//         }
-//     }
-// }
 
 impl FromStr for Combatant {
     type Err = anyhow::Error;

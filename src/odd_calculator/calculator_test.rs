@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
-use crate::odd_calculator::*;
-use crate::Hero;
+use crate::odd_calculator::{calculator::Hero, *};
 
 #[test]
 fn test_test() {

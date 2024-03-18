@@ -1,4 +1,5 @@
 use crate::odd_calculator::calculator::{Calculator, Combatant};
+use rayon::prelude::*;
 
 pub mod calculator;
 pub mod calculator_logger;
@@ -20,6 +21,22 @@ impl CombatSimulator {
         let attacker_wins = (0..self.iterations)
             .map(|_| calculator.do_combat(attacker, defender))
             .fold(0, |acc, item| if item { acc + 1 } else { acc });
+        SimulationResults {
+            attacker_wins,
+            total_iterations: self.iterations,
+        }
+    }
+    pub fn simulate_combat_multi(
+        &self,
+        calculator: &Calculator,
+        attacker: Combatant,
+        defender: Combatant,
+    ) -> SimulationResults {
+        let attacker_wins: i32 = (0..self.iterations)
+            .into_par_iter()
+            .map(|_| calculator.do_combat(attacker, defender))
+            .fold(|| 0, |acc, item| if item { acc + 1 } else { acc })
+            .sum::<i32>();
         SimulationResults {
             attacker_wins,
             total_iterations: self.iterations,

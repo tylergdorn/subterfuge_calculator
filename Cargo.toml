@@ -9,4 +9,8 @@ edition = "2021"
 anyhow = "1.0.81"
 clap = { version = "4.5.3", features = ["derive"] }
 rand = "0.8.5"
+rayon = "1.9.0"
 regex = "1.10.3"
+
+[profile.release]
+debug = true
