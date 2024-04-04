@@ -158,8 +158,14 @@ pub struct Calculator {
 }
 
 pub struct CombatResults {
-    attacker_victory: bool,
-    dice_rolls: i32,
+    pub attacker_victory: bool,
+    pub dice_rolls: i32,
+    pub vitality_remaining: VitalityRemaining,
+}
+
+pub enum VitalityRemaining {
+    DefenderHealth(i32),
+    AttackerHealth(i32),
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]

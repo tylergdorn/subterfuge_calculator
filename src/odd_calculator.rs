@@ -57,4 +57,7 @@ impl SimulationResults {
             (self.attacker_wins as f32 / self.total_iterations as f32) * 100.0
         )
     }
+    pub fn to_percent_f32(self) -> f32 {
+        (self.attacker_wins as f32 / self.total_iterations as f32) * 100.0
+    }
 }
