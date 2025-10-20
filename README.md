@@ -52,21 +52,20 @@ Or run the compiled binary directly:
 ## Usage
 
 ```
-USAGE:
-  subterfuge_cal [FLAGS] [OPTIONS] <attacker> <defender>
+Usage:
+  subterfuge_cal.exe [OPTIONS] <ATTACKER> <DEFENDER>
 
-FLAGS:
-  -f, --fort         Apply fort bonus
-  -a, --ark          Apply ark rule
-  -l, --log          Print detailed combat log
-  -m, --multi        Run multi-combat simulation
+Arguments:
+  <ATTACKER>  `attack,health` for hero, or just a number for units
+  <DEFENDER>  `attack,health` for hero, or just a number for units
 
-OPTIONS:
-  -s, --simulations <N>    Number of Monte Carlo simulations (default: 100000)
-
-ARGS:
-  <attacker>  "N" for units or "A,H" for hero (attack,health)
-  <defender>  "N" for units or "A,H" for hero (attack,health)
+Options:
+  -f, --fort
+  -a, --ark
+  -s, --simulations <SIMULATIONS>  [default: 100000]
+  -l, --log
+  -m, --multi
+  -h, --help                       Print help
 ```
 
 ---
